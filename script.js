@@ -73,10 +73,10 @@ class App {
   constructor() {
     this._getPosition();
 
+    this._getLocalStorage();
+
     form.addEventListener("submit", this._newWorkout.bind(this));
-
     inputType.addEventListener("change", this._toggleElevationField);
-
     containerWorkouts.addEventListener("click", this._moveToPopup.bind(this));
   }
 
@@ -86,7 +86,7 @@ class App {
         this._loadMap.bind(this),
         function () {
           alert(
-            "jMap cannot access your location, which it vital for functionality. Please allow access for continued use of this application."
+            "runMap cannot access your location, which it vital for functionality. Please allow access for continued use of this application."
           );
         }
       );
@@ -96,7 +96,6 @@ class App {
   _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
-    console.log(latitude, longitude);
 
     const coords = [latitude, longitude];
 
@@ -108,6 +107,10 @@ class App {
     }).addTo(this.#map);
 
     this.#map.on("click", this._showForm.bind(this));
+
+    this.#workouts.forEach((work) => {
+      this._renderWorkoutMaker(work);
+    });
   }
 
   _showForm(mapE) {
@@ -176,6 +179,8 @@ class App {
     this._renderWorkout(workout);
 
     this._hideForm();
+
+    this._setLocalStorage();
   }
 
   _renderWorkoutMaker(workout) {
@@ -263,6 +268,26 @@ class App {
         duration: 1,
       },
     });
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem("workouts"));
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach((work) => {
+      this._renderWorkout(work);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem("workouts");
+    location.reload();
   }
 }
 
